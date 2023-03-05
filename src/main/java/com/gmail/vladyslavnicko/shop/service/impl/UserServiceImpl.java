@@ -6,23 +6,25 @@ import com.gmail.vladyslavnicko.shop.exception.ConflictException;
 import com.gmail.vladyslavnicko.shop.model.Address;
 import com.gmail.vladyslavnicko.shop.model.User;
 import com.gmail.vladyslavnicko.shop.repository.UserRepository;
+import com.gmail.vladyslavnicko.shop.security.PasswordHashing;
 import com.gmail.vladyslavnicko.shop.service.UserService;
-import org.apache.tomcat.util.codec.binary.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
+    private final PasswordHashing passwordHashing;
+
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordHashing passwordHashing) {
         this.userRepository = userRepository;
+        this.passwordHashing = passwordHashing;
     }
 
     @Override
@@ -32,6 +34,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User saveUser(User user) {
+        String password = user.getPassword();
+        byte[] salt = passwordHashing.generateSalt();
+        user.setSalt(salt);
+        user.setPasswordHash(passwordHashing.hashPassword(password, salt));
         return userRepository.save(user);
     }
 
@@ -89,7 +95,7 @@ public class UserServiceImpl implements UserService {
         if (user.getOldPassword().equals(user.getNewPassword())) {
             throw new ConflictException("The entered password is identical to the old one");
         }
-        findUser.setPassword(user.getNewPassword());
+      //  findUser.setPassword(user.getNewPassword());
         return new UserInfo().getUserInfoFromUser(userRepository.save(findUser));
     }
 
@@ -101,5 +107,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public boolean chackPasssword(String password, User user) {
+        // для проверки пароля, запрашиваем соль и захэшированный пароль из базы данных
+        byte[] storedSalt = user.getSalt();
+        byte[] storedHashedPassword = user.getPasswordHash();
+        // проверяем, соответствует ли введенный пользователем пароль сохраненному захэшированному паролю
+        return passwordHashing.verifyPassword(password, storedSalt, storedHashedPassword);
     }
 }

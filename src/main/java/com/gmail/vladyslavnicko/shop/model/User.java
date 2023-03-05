@@ -24,7 +24,12 @@ public class User {
     private String email;
 
     @Column(name = "password")
+    private byte[] passwordHash;
+    @Transient
     private String password;
+
+    @Column(name = "salt")
+    private byte[] salt;
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;

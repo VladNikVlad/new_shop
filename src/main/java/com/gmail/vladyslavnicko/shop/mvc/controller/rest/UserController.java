@@ -24,11 +24,13 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<User> login(@RequestBody User user) {
         User findUser = userService.findByEmail(user.getEmail());
-        if (findUser == null || !findUser.getPassword().equals(user.getPassword())) {
-            throw new ConflictException("Invalid email or password");
-        } else {
-            return ResponseEntity.ok(findUser);
+        if (findUser == null) {
+            throw new ConflictException("Invalid email");
         }
+        if (!userService.chackPasssword(user.getPassword(), findUser)){
+            throw new ConflictException("Invalid password");
+        }
+        return ResponseEntity.ok(findUser);
     }
 
     @PostMapping("/register")

@@ -13,4 +13,5 @@ public interface UserService {
     void deleteUserById(Long id);
     UserInfo updateUser(long id, UserInfo user);
     UserInfo updateUserPassword(long id, UserPassword user);
+    boolean chackPasssword(String password, User user);
 }
