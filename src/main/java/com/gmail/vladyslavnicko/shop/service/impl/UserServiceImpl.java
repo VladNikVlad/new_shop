@@ -10,6 +10,7 @@ import com.gmail.vladyslavnicko.shop.security.PasswordHashing;
 import com.gmail.vladyslavnicko.shop.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email);
     }
 
+    @Transactional
     @Override
     public User saveUser(User user) {
         String password = user.getPassword();
@@ -41,6 +43,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     @Override
     public UserInfo updateUser(long id, UserInfo user) {
         User findUser = userRepository.findById(id);
@@ -80,6 +83,8 @@ public class UserServiceImpl implements UserService {
         UserInfo info = new UserInfo();
         return info.getUserInfoFromUser(userRepository.save(findUser));
     }
+
+    @Transactional
     @Override
     public UserInfo updateUserPassword(long id, UserPassword user){
         User findUser = userRepository.findById(id);
@@ -104,6 +109,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll();
     }
 
+    @Transactional
     @Override
     public void deleteUserById(Long id) {
         userRepository.deleteById(id);
